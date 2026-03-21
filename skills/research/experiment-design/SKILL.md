@@ -22,12 +22,13 @@ Use this skill when the user has:
    - success metrics
    - baselines
    - constraints
-3. Search for prior work first with `alpha_search` so you do not reinvent an obviously flawed setup.
-4. Use `alpha_get_paper` and `alpha_ask_paper` on the strongest references.
-5. Prefer the smallest experiment that can meaningfully reduce uncertainty.
-6. List confounders and failure modes up front.
-7. If implementation is requested, create the scripts, configs, and logging plan.
-8. Write the plan to disk before running expensive work.
+3. Search for prior work first.
+4. If the setup is tied to current products, APIs, model offerings, pricing, or market behavior, use `web_search` and `fetch_content` first.
+5. Use `alpha_search`, `alpha_get_paper`, and `alpha_ask_paper` for academic baselines and prior experiments.
+6. Prefer the smallest experiment that can meaningfully reduce uncertainty.
+7. List confounders and failure modes up front.
+8. If implementation is requested, create the scripts, configs, and logging plan.
+9. Write the plan to disk before running expensive work.
 
 ## Pitfalls
 

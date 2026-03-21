@@ -3,6 +3,7 @@ node_modules
 .feynman
 .pi/npm
 .pi/git
+.pi/schedule-prompts.json
 dist
 *.tgz
 outputs/*

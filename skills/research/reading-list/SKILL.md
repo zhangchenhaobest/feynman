@@ -15,30 +15,33 @@ Use this skill for:
 
 ## Procedure
 
-1. Start with `alpha_search` in `all` mode.
-2. Inspect the strongest candidates with `alpha_get_paper`.
-3. Use `alpha_ask_paper` for fit questions like:
+1. Start with source discovery that matches the topic.
+2. For academic topics, use `alpha_search` in `all` mode.
+3. For current, product-oriented, or market-facing topics, use `web_search` and `fetch_content` first, then use `alpha_search` for background literature if needed.
+4. Inspect the strongest candidates directly before recommending them.
+5. Use `alpha_ask_paper` for fit questions like:
    - what problem does this really solve
    - what assumptions does it rely on
    - what prior work does it build on
-4. Classify papers into roles:
+6. Classify papers or sources into roles:
    - foundational
    - key recent advances
    - evaluation or benchmark references
    - critiques or limitations
    - likely replication targets
-5. Order the list intentionally:
+7. Order the list intentionally:
    - start with orientation
    - move to strongest methods
    - finish with edges, critiques, or adjacent work
-6. Write the final list as a durable markdown artifact in `outputs/`.
-7. For every paper, include a direct URL.
+8. Write the final list as a durable markdown artifact in `outputs/`.
+9. For every source, include a direct URL.
 
 ## Pitfalls
 
 - Do not sort purely by citations.
 - Do not over-index on recency when fundamentals matter.
 - Do not include papers you have not inspected at all.
+- Do not force everything into papers when the user actually needs current docs, products, or market sources.
 
 ## Deliverable
 
