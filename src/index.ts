@@ -138,6 +138,9 @@ async function probeTerminalBackgroundHex(timeoutMs = 120): Promise<string | und
 	}
 
 	const wasRaw = "isRaw" in input ? Boolean((input as typeof input & { isRaw?: boolean }).isRaw) : false;
+	const wasFlowing = "readableFlowing" in input
+		? (input as typeof input & { readableFlowing?: boolean | null }).readableFlowing
+		: null;
 
 	return await new Promise<string | undefined>((resolve) => {
 		let settled = false;
@@ -156,6 +159,9 @@ async function probeTerminalBackgroundHex(timeoutMs = 120): Promise<string | und
 				}
 			} catch {
 				// Ignore raw mode restore failures and return best-effort detection.
+			}
+			if (wasFlowing !== true) {
+				input.pause();
 			}
 			resolve(value);
 		};

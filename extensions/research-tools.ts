@@ -606,6 +606,64 @@ Recommended contents:
 `;
 }
 
+type HelpCommand = {
+	usage: string;
+	description: string;
+};
+
+function buildFeynmanHelpSections(): Array<{ title: string; commands: HelpCommand[] }> {
+	return [
+		{
+			title: "Core Research Workflows",
+			commands: [
+				{ usage: "/lit <topic>", description: "Survey papers on a topic." },
+				{ usage: "/related <topic>", description: "Map related work and justify the gap." },
+				{ usage: "/review <artifact>", description: "Simulate a peer review for an AI research artifact." },
+				{ usage: "/ablate <artifact>", description: "Design the minimum convincing ablation set." },
+				{ usage: "/rebuttal <artifact>", description: "Draft a rebuttal and revision matrix." },
+				{ usage: "/replicate <paper or claim>", description: "Plan or execute a replication workflow." },
+				{ usage: "/reading <topic>", description: "Build a prioritized reading list." },
+				{ usage: "/memo <topic>", description: "Write a source-grounded research memo." },
+				{ usage: "/compare <topic>", description: "Compare sources and disagreements." },
+				{ usage: "/audit <item>", description: "Audit a paper against its codebase." },
+				{ usage: "/draft <topic>", description: "Write a paper-style draft." },
+				{ usage: "/deepresearch <topic>", description: "Run a source-heavy research pass." },
+				{ usage: "/autoresearch <idea>", description: "Run an end-to-end idea-to-paper workflow." },
+			],
+		},
+		{
+			title: "Project Memory And Tracking",
+			commands: [
+				{ usage: "/init", description: "Bootstrap AGENTS.md and session-log folders." },
+				{ usage: "/log", description: "Write a durable session log into notes/." },
+				{ usage: "/watch <topic>", description: "Create a recurring or deferred research watch." },
+				{ usage: "/jobs", description: "Inspect active background work." },
+				{ usage: "/search", description: "Search prior indexed sessions." },
+			],
+		},
+		{
+			title: "Delegation And Background Work",
+			commands: [
+				{ usage: "/agents", description: "Open the agent and chain manager." },
+				{ usage: "/run <agent> <task>", description: "Run one subagent." },
+				{ usage: "/chain ...", description: "Run a sequential multi-agent chain." },
+				{ usage: "/parallel ...", description: "Run agents in parallel." },
+				{ usage: "/ps", description: "Open the background process panel." },
+				{ usage: "/schedule-prompt", description: "Manage recurring and deferred jobs." },
+			],
+		},
+		{
+			title: "Setup And Utilities",
+			commands: [
+				{ usage: "/alpha-login", description: "Sign in to alphaXiv." },
+				{ usage: "/alpha-status", description: "Check alphaXiv auth." },
+				{ usage: "/alpha-logout", description: "Clear alphaXiv auth." },
+				{ usage: "/preview", description: "Preview generated artifacts." },
+			],
+		},
+	];
+}
+
 export default function researchTools(pi: ExtensionAPI): void {
 	function installFeynmanHeader(ctx: ExtensionContext): void {
 		if (!ctx.hasUI) {
@@ -754,6 +812,26 @@ export default function researchTools(pi: ExtensionAPI): void {
 
 			const name = getAlphaUserName();
 			ctx.ui.notify(name ? `alphaXiv connected as ${name}` : "alphaXiv connected", "info");
+		},
+	});
+
+	pi.registerCommand("help", {
+		description: "Show grouped Feynman commands and prefill the editor with a selected command.",
+		handler: async (_args, ctx) => {
+			const sections = buildFeynmanHelpSections();
+			const items = sections.flatMap((section) => [
+				`--- ${section.title} ---`,
+				...section.commands.map((command) => `${command.usage} — ${command.description}`),
+			]);
+
+			const selected = await ctx.ui.select("Feynman Help", items);
+			if (!selected || selected.startsWith("---")) {
+				return;
+			}
+
+			const usage = selected.split(" — ")[0];
+			ctx.ui.setEditorText(usage);
+			ctx.ui.notify(`Prefilled ${usage}`, "info");
 		},
 	});
 
