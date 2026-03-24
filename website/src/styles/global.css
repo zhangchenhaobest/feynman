@@ -3,31 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #f0f5f1;
-  --color-surface: #e4ece6;
-  --color-surface-2: #d8e3db;
-  --color-border: #c2d1c6;
-  --color-text: #1a2e22;
-  --color-text-muted: #3d5c4a;
-  --color-text-dim: #6b8f7a;
-  --color-accent: #0d9668;
-  --color-accent-hover: #077a54;
-  --color-accent-subtle: #c6e4d4;
-  --color-teal: #0e8a7d;
+  --color-bg: #f3ead3;
+  --color-surface: #eae4ca;
+  --color-surface-2: #e0dbc2;
+  --color-border: #c9c4b0;
+  --color-text: #3a464c;
+  --color-text-muted: #5c6a72;
+  --color-text-dim: #859289;
+  --color-accent: #6e8b53;
+  --color-accent-hover: #5a7342;
+  --color-accent-subtle: #d5e3bf;
+  --color-teal: #5da09a;
 }
 
 .dark {
-  --color-bg: #050a08;
-  --color-surface: #0c1410;
-  --color-surface-2: #131f1a;
-  --color-border: #1b2f26;
-  --color-text: #f0f5f2;
-  --color-text-muted: #8aaa9a;
-  --color-text-dim: #4d7565;
-  --color-accent: #34d399;
-  --color-accent-hover: #10b981;
-  --color-accent-subtle: #064e3b;
-  --color-teal: #2dd4bf;
+  --color-bg: #2d353b;
+  --color-surface: #343f44;
+  --color-surface-2: #3a464c;
+  --color-border: #5c6a72;
+  --color-text: #d3c6aa;
+  --color-text-muted: #9da9a0;
+  --color-text-dim: #859289;
+  --color-accent: #a7c080;
+  --color-accent-hover: #93ad6c;
+  --color-accent-subtle: #425047;
+  --color-teal: #7fbbb3;
 }
 
 html {
@@ -87,7 +87,7 @@ body {
 .prose code {
   font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   font-size: 0.875rem;
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-2);
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
   color: var(--color-text);
@@ -95,7 +95,6 @@ body {
 
 .prose pre {
   position: relative;
-  background-color: var(--color-surface) !important;
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   overflow-x: auto;
@@ -103,13 +102,13 @@ body {
   font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   font-size: 0.875rem;
   line-height: 1.7;
+  border: 1px solid var(--color-border);
 }
 
 .prose pre code {
   background: none !important;
   border: none;
   padding: 0;
-  color: var(--color-text);
 }
 
 .copy-code {
@@ -137,9 +136,6 @@ pre:hover .copy-code {
   color: var(--color-accent);
 }
 
-.prose pre code span {
-  color: inherit !important;
-}
 
 .prose table {
   width: 100%;
@@ -199,6 +195,34 @@ pre:hover .copy-code {
   color: var(--color-text-dim);
   font-style: italic;
   margin-bottom: 1rem;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-dim);
+}
+
+::selection {
+  background: var(--color-accent-subtle);
+  color: var(--color-text);
 }
 
 .agent-entry {

@@ -1,44 +1,59 @@
-# Feynman
+<p align="center">
+  <a href="https://feynman.is">
+    <img src="assets/hero.png" alt="Feynman CLI" width="800" />
+  </a>
+</p>
+<p align="center">The open source AI research agent.</p>
+<p align="center">
+  <a href="https://feynman.is/docs"><img alt="Docs" src="https://img.shields.io/badge/docs-feynman.is-0d9668?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@companion-ai/feynman"><img alt="npm" src="https://img.shields.io/npm/v/@companion-ai/feynman?style=flat-square" /></a>
+  <a href="https://github.com/getcompanion-ai/feynman/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/getcompanion-ai/feynman?style=flat-square" /></a>
+</p>
 
-The open source AI research agent
+---
+
+### Installation
 
 ```bash
 curl -fsSL https://feynman.is/install | bash
 ```
 
 ```powershell
+# Windows
 irm https://feynman.is/install.ps1 | iex
 ```
 
-Or install the npm fallback:
-
 ```bash
+# npm fallback
 npm install -g @companion-ai/feynman
 ```
 
-```bash
-feynman setup
-feynman
+Then run `feynman setup` to configure your model and get started.
+
+---
+
+### What you type → what happens
+
+```
+$ feynman "what do we know about scaling laws"
+→ Searches papers and web, produces a cited research brief
+
+$ feynman deepresearch "mechanistic interpretability"
+→ Multi-agent investigation with parallel researchers, synthesis, verification
+
+$ feynman lit "RLHF alternatives"
+→ Literature review with consensus, disagreements, open questions
+
+$ feynman audit 2401.12345
+→ Compares paper claims against the public codebase
+
+$ feynman replicate "chain-of-thought improves math"
+→ Asks where to run, then builds a replication plan
 ```
 
-Feynman works directly inside your folder or repo. For long-running work, keep the stable repo contract in `AGENTS.md`, the current task brief in `outputs/.plans/`, and the chronological lab notebook in `CHANGELOG.md`.
-
 ---
 
-## What you type → what happens
-
-| Prompt | Result |
-| --- | --- |
-| `feynman "what do we know about scaling laws"` | Searches papers and web, produces a cited research brief |
-| `feynman deepresearch "mechanistic interpretability"` | Multi-agent investigation with parallel researchers, synthesis, verification |
-| `feynman lit "RLHF alternatives"` | Literature review with consensus, disagreements, open questions |
-| `feynman audit 2401.12345` | Compares paper claims against the public codebase |
-| `feynman replicate "chain-of-thought improves math"` | Asks where to run, then builds a replication plan |
-| `feynman "summarize this PDF" --prompt paper.pdf` | One-shot mode, no REPL |
-
----
-
-## Workflows
+### Workflows
 
 Ask naturally or use slash commands as shortcuts.
 
@@ -56,9 +71,9 @@ Ask naturally or use slash commands as shortcuts.
 
 ---
 
-## Agents
+### Agents
 
-Four bundled research agents, dispatched automatically or via subagent commands.
+Four bundled research agents, dispatched automatically.
 
 - **Researcher** — gather evidence across papers, web, repos, docs
 - **Reviewer** — simulated peer review with severity-graded feedback
@@ -67,42 +82,23 @@ Four bundled research agents, dispatched automatically or via subagent commands.
 
 ---
 
-## Tools
+### Tools
 
 - **[AlphaXiv](https://www.alphaxiv.org/)** — paper search, Q&A, code reading, persistent annotations
 - **Docker** — isolated container execution for safe experiments on your machine
-- **Web search** — Gemini or Perplexity, zero-config default via signed-in Chromium
-- **Session search** — optional indexed recall across prior research sessions
+- **Web search** — Gemini or Perplexity, zero-config default
+- **Session search** — indexed recall across prior research sessions
 - **Preview** — browser and PDF export of generated artifacts
 
 ---
 
-## CLI
+### How it works
 
-```bash
-feynman                             # REPL
-feynman setup                       # guided setup
-feynman doctor                      # diagnose everything
-feynman status                      # current config summary
-feynman model login [provider]      # model auth
-feynman model set <provider/model>  # set default model
-feynman alpha login                 # alphaXiv auth
-feynman packages list               # core vs optional packages
-feynman packages install memory     # opt into heavier packages on demand
-feynman search status               # web search config
-```
+Built on [Pi](https://github.com/badlogic/pi-mono) for the agent runtime, [alphaXiv](https://www.alphaxiv.org/) for paper search and analysis, and [Docker](https://www.docker.com/) for isolated local execution. Every output is source-grounded — claims link to papers, docs, or repos with direct URLs.
 
 ---
 
-## How it works
-
-Built on [Pi](https://github.com/badlogic/pi-mono) for the agent runtime, [alphaXiv](https://www.alphaxiv.org/) for paper search and analysis, and [Docker](https://www.docker.com/) for isolated local execution
-
-Every output is source-grounded — claims link to papers, docs, or repos with direct URLs
-
----
-
-## Contributing
+### Contributing
 
 ```bash
 git clone https://github.com/getcompanion-ai/feynman.git

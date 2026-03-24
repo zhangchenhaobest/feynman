@@ -16,7 +16,174 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 
 import { getExtensionCommandSpec } from "../../metadata/commands.mjs";
-import { formatToolText } from "./shared.js";
+import { collapseExcessBlankLines, formatToolText } from "./shared.js";
+
+type JsonRecord = Record<string, unknown>;
+
+type AlphaSearchHit = {
+	rank?: number;
+	title?: string;
+	publishedAt?: string;
+	organizations?: string;
+	authors?: string;
+	abstract?: string;
+	arxivId?: string;
+	arxivUrl?: string;
+	alphaXivUrl?: string;
+};
+
+type AlphaSearchSection = {
+	count: number;
+	results: AlphaSearchHit[];
+	note?: string;
+};
+
+type AlphaSearchPayload = {
+	query?: string;
+	mode?: string;
+	results?: AlphaSearchHit[];
+	semantic?: AlphaSearchSection;
+	keyword?: AlphaSearchSection;
+	agentic?: AlphaSearchSection;
+};
+
+function isRecord(value: unknown): value is JsonRecord {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function cleanText(value: unknown, maxLength = 320): string | undefined {
+	if (typeof value !== "string") {
+		return undefined;
+	}
+
+	const collapsed = collapseExcessBlankLines(value)
+		.replace(/\s*\n\s*/g, " ")
+		.replace(/[ \t]+/g, " ");
+	if (!collapsed) {
+		return undefined;
+	}
+
+	return collapsed.length > maxLength ? `${collapsed.slice(0, maxLength - 1).trimEnd()}…` : collapsed;
+}
+
+function sanitizeHit(value: unknown, fallbackRank: number): AlphaSearchHit | null {
+	if (!isRecord(value)) {
+		return null;
+	}
+
+	const title = cleanText(value.title, 220);
+	if (!title) {
+		return null;
+	}
+
+	return {
+		rank: typeof value.rank === "number" ? value.rank : fallbackRank,
+		title,
+		publishedAt: cleanText(value.publishedAt, 48),
+		organizations: cleanText(value.organizations, 180),
+		authors: cleanText(value.authors, 220),
+		abstract: cleanText(value.abstract, 360),
+		arxivId: cleanText(value.arxivId, 32),
+		arxivUrl: cleanText(value.arxivUrl, 160),
+		alphaXivUrl: cleanText(value.alphaXivUrl, 160),
+	};
+}
+
+function sanitizeHits(value: unknown): AlphaSearchHit[] {
+	if (!Array.isArray(value)) {
+		return [];
+	}
+
+	return value
+		.map((entry, index) => sanitizeHit(entry, index + 1))
+		.filter((entry): entry is AlphaSearchHit => entry !== null);
+}
+
+function sanitizeSection(value: unknown): AlphaSearchSection {
+	if (!isRecord(value)) {
+		return { count: 0, results: [] };
+	}
+
+	const results = sanitizeHits(value.results);
+	const note = results.length === 0 ? cleanText(value.raw, 600) : undefined;
+
+	return {
+		count: results.length,
+		results,
+		...(note ? { note } : {}),
+	};
+}
+
+export function sanitizeAlphaSearchPayload(value: unknown): AlphaSearchPayload {
+	if (!isRecord(value)) {
+		return {};
+	}
+
+	const payload: AlphaSearchPayload = {
+		query: cleanText(value.query, 240),
+		mode: cleanText(value.mode, 32),
+	};
+
+	const topLevelResults = sanitizeHits(value.results);
+	if (topLevelResults.length > 0) {
+		payload.results = topLevelResults;
+	}
+
+	for (const key of ["semantic", "keyword", "agentic"] as const) {
+		if (key in value) {
+			payload[key] = sanitizeSection(value[key]);
+		}
+	}
+
+	return payload;
+}
+
+function pushHitLines(lines: string[], hit: AlphaSearchHit): void {
+	lines.push(`${hit.rank ?? "?"}. ${hit.title ?? "Untitled result"}`);
+	if (hit.arxivId) lines.push(`   arXiv: ${hit.arxivId}`);
+	if (hit.publishedAt) lines.push(`   published: ${hit.publishedAt}`);
+	if (hit.organizations) lines.push(`   orgs: ${hit.organizations}`);
+	if (hit.authors) lines.push(`   authors: ${hit.authors}`);
+	if (hit.abstract) lines.push(`   abstract: ${hit.abstract}`);
+	if (hit.arxivUrl) lines.push(`   arXiv URL: ${hit.arxivUrl}`);
+	if (hit.alphaXivUrl) lines.push(`   alphaXiv URL: ${hit.alphaXivUrl}`);
+}
+
+function pushSectionLines(lines: string[], label: string, section: AlphaSearchSection): void {
+	lines.push(`${label} (${section.count})`);
+	if (section.results.length === 0) {
+		lines.push(section.note ? `  note: ${section.note}` : "  no parsed results");
+		return;
+	}
+
+	for (const hit of section.results) {
+		pushHitLines(lines, hit);
+	}
+}
+
+export function formatAlphaSearchContext(value: unknown): string {
+	const payload = sanitizeAlphaSearchPayload(value);
+	const lines: string[] = [];
+
+	if (payload.query) lines.push(`query: ${payload.query}`);
+	if (payload.mode) lines.push(`mode: ${payload.mode}`);
+
+	if (payload.results) {
+		pushSectionLines(lines, "results", { count: payload.results.length, results: payload.results });
+	}
+
+	for (const [label, section] of [
+		["semantic", payload.semantic],
+		["keyword", payload.keyword],
+		["agentic", payload.agentic],
+	] as const) {
+		if (section) {
+			pushSectionLines(lines, label, section);
+		}
+	}
+
+	return lines.length > 0 ? lines.join("\n") : "No alpha search results returned.";
+}
 
 export function registerAlphaCommands(pi: ExtensionAPI): void {
 	pi.registerCommand("alpha-login", {
@@ -72,9 +239,10 @@ export function registerAlphaTools(pi: ExtensionAPI): void {
 		async execute(_toolCallId, params) {
 			try {
 				const result = await searchPapers(params.query, params.mode?.trim() || "all");
+				const sanitized = sanitizeAlphaSearchPayload(result);
 				return {
-					content: [{ type: "text", text: formatToolText(result) }],
-					details: result,
+					content: [{ type: "text", text: formatAlphaSearchContext(sanitized) }],
+					details: sanitized,
 				};
 			} finally {
 				await disconnect();

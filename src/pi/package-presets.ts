@@ -23,12 +23,12 @@ export const OPTIONAL_PACKAGE_PRESETS = {
 	},
 } as const;
 
+export type OptionalPackagePresetName = keyof typeof OPTIONAL_PACKAGE_PRESETS;
+
 const LEGACY_DEFAULT_PACKAGE_SOURCES = [
 	...CORE_PACKAGE_SOURCES,
 	"npm:pi-generative-ui",
 ] as const;
-
-export type OptionalPackagePresetName = keyof typeof OPTIONAL_PACKAGE_PRESETS;
 
 function arraysMatchAsSets(left: readonly string[], right: readonly string[]): boolean {
 	if (left.length !== right.length) {

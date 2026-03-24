@@ -27,8 +27,13 @@ export const FEYNMAN_RESEARCH_TOOLS = [
 	"preview_file",
 ];
 
+export function collapseExcessBlankLines(text: string): string {
+	return text.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 export function formatToolText(result: unknown): string {
-	return typeof result === "string" ? result : JSON.stringify(result, null, 2);
+	const text = typeof result === "string" ? result : JSON.stringify(result, null, 2);
+	return collapseExcessBlankLines(text);
 }
 
 export function getFeynmanHome(): string {
