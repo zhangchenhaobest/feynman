@@ -2,6 +2,7 @@
   "name": "@companion-ai/feynman",
   "version": "0.2.12",
   "description": "Research-first CLI agent built on Pi and alphaXiv",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=20.18.1"

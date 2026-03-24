@@ -3,7 +3,7 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   integrations: [tailwind()],
-  site: 'https://feynman.companion.ai',
+  site: 'https://feynman.is',
   markdown: {
     shikiConfig: {
       themes: {
