@@ -83,6 +83,66 @@ export function patchPiSubagentsSource(relativePath, source) {
 				'const userDir = path.join(os.homedir(), ".pi", "agent", "agents");',
 				'const userDir = path.join(resolvePiAgentDir(), "agents");',
 			);
+			patched = replaceAll(
+				patched,
+				[
+					'export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryResult {',
+					'\tconst userDirOld = path.join(os.homedir(), ".pi", "agent", "agents");',
+					'\tconst userDirNew = path.join(os.homedir(), ".agents");',
+				].join("\n"),
+				[
+					'export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryResult {',
+					'\tconst userDir = path.join(resolvePiAgentDir(), "agents");',
+				].join("\n"),
+			);
+			patched = replaceAll(
+				patched,
+				[
+					'\tconst userAgentsOld = scope === "project" ? [] : loadAgentsFromDir(userDirOld, "user");',
+					'\tconst userAgentsNew = scope === "project" ? [] : loadAgentsFromDir(userDirNew, "user");',
+					'\tconst userAgents = [...userAgentsOld, ...userAgentsNew];',
+				].join("\n"),
+				'\tconst userAgents = scope === "project" ? [] : loadAgentsFromDir(userDir, "user");',
+			);
+			patched = replaceAll(
+				patched,
+				[
+					'const userDirOld = path.join(os.homedir(), ".pi", "agent", "agents");',
+					'const userDirNew = path.join(os.homedir(), ".agents");',
+				].join("\n"),
+				'const userDir = path.join(resolvePiAgentDir(), "agents");',
+			);
+			patched = replaceAll(
+				patched,
+				[
+					'\tconst user = [',
+					'\t\t...loadAgentsFromDir(userDirOld, "user"),',
+					'\t\t...loadAgentsFromDir(userDirNew, "user"),',
+					'\t];',
+				].join("\n"),
+				'\tconst user = loadAgentsFromDir(userDir, "user");',
+			);
+			patched = replaceAll(
+				patched,
+				[
+					'\tconst chains = [',
+					'\t\t...loadChainsFromDir(userDirOld, "user"),',
+					'\t\t...loadChainsFromDir(userDirNew, "user"),',
+					'\t\t...(projectDir ? loadChainsFromDir(projectDir, "project") : []),',
+					'\t];',
+				].join("\n"),
+				[
+					'\tconst chains = [',
+					'\t\t...loadChainsFromDir(userDir, "user"),',
+					'\t\t...(projectDir ? loadChainsFromDir(projectDir, "project") : []),',
+					'\t];',
+				].join("\n"),
+			);
+			patched = replaceAll(
+				patched,
+				'\tconst userDir = fs.existsSync(userDirNew) ? userDirNew : userDirOld;',
+				'\tconst userDir = path.join(resolvePiAgentDir(), "agents");',
+			);
 			break;
 		case "artifacts.ts":
 			patched = replaceAll(

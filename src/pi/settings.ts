@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 
 import { ModelRegistry, type PackageSource } from "@mariozechner/pi-coding-agent";
 
-import { CORE_PACKAGE_SOURCES, shouldPruneLegacyDefaultPackages } from "./package-presets.js";
+import { CORE_PACKAGE_SOURCES, filterPackageSourcesForCurrentNode, shouldPruneLegacyDefaultPackages } from "./package-presets.js";
 import { createModelRegistry } from "../model/registry.js";
 
 export type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh";
@@ -67,6 +67,23 @@ function choosePreferredModel(
 	return availableModels[0];
 }
 
+function filterConfiguredPackagesForCurrentNode(packages: PackageSource[] | undefined): PackageSource[] {
+	if (!Array.isArray(packages)) {
+		return [];
+	}
+
+	const filteredStringSources = new Set(filterPackageSourcesForCurrentNode(
+		packages
+			.map((entry) => (typeof entry === "string" ? entry : entry.source))
+			.filter((entry): entry is string => typeof entry === "string"),
+	));
+
+	return packages.filter((entry) => {
+		const source = typeof entry === "string" ? entry : entry.source;
+		return filteredStringSources.has(source);
+	});
+}
+
 export function readJson(path: string): Record<string, unknown> {
 	if (!existsSync(path)) {
 		return {};
@@ -110,10 +127,13 @@ export function normalizeFeynmanSettings(
 	settings.theme = "feynman";
 	settings.quietStartup = true;
 	settings.collapseChangelog = true;
+	const supportedCorePackages = filterPackageSourcesForCurrentNode(CORE_PACKAGE_SOURCES);
 	if (!Array.isArray(settings.packages) || settings.packages.length === 0) {
-		settings.packages = [...CORE_PACKAGE_SOURCES];
+		settings.packages = supportedCorePackages;
 	} else if (shouldPruneLegacyDefaultPackages(settings.packages as PackageSource[])) {
-		settings.packages = [...CORE_PACKAGE_SOURCES];
+		settings.packages = supportedCorePackages;
+	} else {
+		settings.packages = filterConfiguredPackagesForCurrentNode(settings.packages as PackageSource[]);
 	}
 
 	const modelRegistry = createModelRegistry(authPath);

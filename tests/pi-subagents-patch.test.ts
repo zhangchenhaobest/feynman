@@ -102,3 +102,41 @@ test("patchPiSubagentsSource is idempotent", () => {
 
 	assert.equal(twice, once);
 });
+
+test("patchPiSubagentsSource rewrites modern agents.ts discovery paths", () => {
+	const input = [
+		'import * as fs from "node:fs";',
+		'import * as os from "node:os";',
+		'import * as path from "node:path";',
+		'export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryResult {',
+		'\tconst userDirOld = path.join(os.homedir(), ".pi", "agent", "agents");',
+		'\tconst userDirNew = path.join(os.homedir(), ".agents");',
+		'\tconst userAgentsOld = scope === "project" ? [] : loadAgentsFromDir(userDirOld, "user");',
+		'\tconst userAgentsNew = scope === "project" ? [] : loadAgentsFromDir(userDirNew, "user");',
+		'\tconst userAgents = [...userAgentsOld, ...userAgentsNew];',
+		'}',
+		'export function discoverAgentsAll(cwd: string) {',
+		'\tconst userDirOld = path.join(os.homedir(), ".pi", "agent", "agents");',
+		'\tconst userDirNew = path.join(os.homedir(), ".agents");',
+		'\tconst user = [',
+		'\t\t...loadAgentsFromDir(userDirOld, "user"),',
+		'\t\t...loadAgentsFromDir(userDirNew, "user"),',
+		'\t];',
+		'\tconst chains = [',
+		'\t\t...loadChainsFromDir(userDirOld, "user"),',
+		'\t\t...loadChainsFromDir(userDirNew, "user"),',
+		'\t\t...(projectDir ? loadChainsFromDir(projectDir, "project") : []),',
+		'\t];',
+		'\tconst userDir = fs.existsSync(userDirNew) ? userDirNew : userDirOld;',
+		'}',
+	].join("\n");
+
+	const patched = patchPiSubagentsSource("agents.ts", input);
+
+	assert.match(patched, /function resolvePiAgentDir\(\): string \{/);
+	assert.match(patched, /const userDir = path\.join\(resolvePiAgentDir\(\), "agents"\);/);
+	assert.match(patched, /const userAgents = scope === "project" \? \[\] : loadAgentsFromDir\(userDir, "user"\);/);
+	assert.ok(!patched.includes('loadAgentsFromDir(userDirOld, "user")'));
+	assert.ok(!patched.includes('loadChainsFromDir(userDirNew, "user")'));
+	assert.ok(!patched.includes('fs.existsSync(userDirNew) ? userDirNew : userDirOld'));
+});

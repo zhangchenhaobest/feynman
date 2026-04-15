@@ -17,6 +17,13 @@ export const CORE_PACKAGE_SOURCES = [
 	"npm:@tmustier/pi-ralph-wiggum",
 ] as const;
 
+export const NATIVE_PACKAGE_SOURCES = [
+	"npm:@kaiserlich-dev/pi-session-search",
+	"npm:@samfp/pi-memory",
+] as const;
+
+export const MAX_NATIVE_PACKAGE_NODE_MAJOR = 24;
+
 export const OPTIONAL_PACKAGE_PRESETS = {
 	"generative-ui": {
 		description: "Interactive Glimpse UI widgets.",
@@ -48,6 +55,24 @@ export function shouldPruneLegacyDefaultPackages(packages: PackageSource[] | und
 		return false;
 	}
 	return arraysMatchAsSets(packages as string[], LEGACY_DEFAULT_PACKAGE_SOURCES);
+}
+
+function parseNodeMajor(version: string): number {
+	const [major = "0"] = version.replace(/^v/, "").split(".");
+	return Number.parseInt(major, 10) || 0;
+}
+
+export function supportsNativePackageSources(version = process.versions.node): boolean {
+	return parseNodeMajor(version) <= MAX_NATIVE_PACKAGE_NODE_MAJOR;
+}
+
+export function filterPackageSourcesForCurrentNode<T extends string>(sources: readonly T[], version = process.versions.node): T[] {
+	if (supportsNativePackageSources(version)) {
+		return [...sources];
+	}
+
+	const blocked = new Set<string>(NATIVE_PACKAGE_SOURCES);
+	return sources.filter((source) => !blocked.has(source));
 }
 
 export function getOptionalPackagePresetSources(name: string): string[] | undefined {

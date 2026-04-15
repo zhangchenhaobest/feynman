@@ -4,7 +4,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { CORE_PACKAGE_SOURCES, getOptionalPackagePresetSources, shouldPruneLegacyDefaultPackages } from "../src/pi/package-presets.js";
+import {
+	CORE_PACKAGE_SOURCES,
+	getOptionalPackagePresetSources,
+	NATIVE_PACKAGE_SOURCES,
+	shouldPruneLegacyDefaultPackages,
+	supportsNativePackageSources,
+} from "../src/pi/package-presets.js";
 import { normalizeFeynmanSettings, normalizeThinkingLevel } from "../src/pi/settings.js";
 
 test("normalizeThinkingLevel accepts the latest Pi thinking levels", () => {
@@ -70,4 +76,43 @@ test("optional package presets map friendly aliases", () => {
 	assert.deepEqual(getOptionalPackagePresetSources("ui"), ["npm:pi-generative-ui"]);
 	assert.deepEqual(getOptionalPackagePresetSources("search"), undefined);
 	assert.equal(shouldPruneLegacyDefaultPackages(["npm:custom"]), false);
+});
+
+test("supportsNativePackageSources disables sqlite-backed packages on Node 25+", () => {
+	assert.equal(supportsNativePackageSources("24.8.0"), true);
+	assert.equal(supportsNativePackageSources("25.0.0"), false);
+});
+
+test("normalizeFeynmanSettings prunes native core packages on unsupported Node majors", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-settings-"));
+	const settingsPath = join(root, "settings.json");
+	const bundledSettingsPath = join(root, "bundled-settings.json");
+	const authPath = join(root, "auth.json");
+
+	writeFileSync(
+		settingsPath,
+		JSON.stringify(
+			{
+				packages: [...CORE_PACKAGE_SOURCES],
+			},
+			null,
+			2,
+		) + "\n",
+		"utf8",
+	);
+	writeFileSync(bundledSettingsPath, "{}\n", "utf8");
+	writeFileSync(authPath, "{}\n", "utf8");
+
+	const originalVersion = process.versions.node;
+	Object.defineProperty(process.versions, "node", { value: "25.0.0", configurable: true });
+	try {
+		normalizeFeynmanSettings(settingsPath, bundledSettingsPath, "medium", authPath);
+	} finally {
+		Object.defineProperty(process.versions, "node", { value: originalVersion, configurable: true });
+	}
+
+	const settings = JSON.parse(readFileSync(settingsPath, "utf8")) as { packages?: string[] };
+	for (const source of NATIVE_PACKAGE_SOURCES) {
+		assert.equal(settings.packages?.includes(source), false);
+	}
 });

@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { dirname, delimiter } from "node:path";
 
 const isWindows = process.platform === "win32";
 const programFiles = process.env.PROGRAMFILES ?? "C:\\Program Files";
@@ -40,14 +41,20 @@ export function resolveExecutable(name: string, fallbackPaths: string[] = []): s
 	}
 
 	const isWindows = process.platform === "win32";
+	const env = {
+		...process.env,
+		PATH: process.env.PATH ?? "",
+	};
 	const result = isWindows
 		? spawnSync("cmd", ["/c", `where ${name}`], {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
+				env,
 			})
-		: spawnSync("sh", ["-lc", `command -v ${name}`], {
+		: spawnSync("sh", ["-c", `command -v ${name}`], {
 				encoding: "utf8",
 				stdio: ["ignore", "pipe", "ignore"],
+				env,
 			});
 
 	if (result.status === 0) {
@@ -58,4 +65,10 @@ export function resolveExecutable(name: string, fallbackPaths: string[] = []): s
 	}
 
 	return undefined;
+}
+
+export function getPathWithCurrentNode(pathValue = process.env.PATH ?? ""): string {
+	const nodeDir = dirname(process.execPath);
+	const parts = pathValue.split(delimiter).filter(Boolean);
+	return parts.includes(nodeDir) ? pathValue : `${nodeDir}${delimiter}${pathValue}`;
 }
