@@ -110,7 +110,7 @@ This usually means the release exists, but not all platform bundles were uploade
 Workarounds:
   - try again after the release finishes publishing
   - pass the latest published version explicitly, e.g.:
-    & ([scriptblock]::Create((irm https://feynman.is/install.ps1))) -Version 0.2.26
+    & ([scriptblock]::Create((irm https://feynman.is/install.ps1))) -Version 0.2.27
 "@
   }
 

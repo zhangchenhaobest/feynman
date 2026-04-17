@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
@@ -11,6 +11,7 @@ import { autoLogPath, writeAutoLogEntry } from "../extensions/research-tools/aut
 import { computeContextPosture } from "../extensions/research-tools/context.js";
 import { buildResumePacket } from "../extensions/research-tools/resume.js";
 import { buildContextRiskSummary } from "../src/setup/doctor.js";
+import { claimPlanSlug, collectManagedGc, spillLargeCustomToolResult } from "../extensions/research-tools/state.js";
 
 function fakeCtx(cwd: string): ExtensionContext {
 	return {
@@ -92,6 +93,61 @@ test("doctor context risk uses Pi model context window and compaction settings",
 	assert.equal(summary.level, "high");
 	assert.match(summary.lines.join("\n"), /Pi compaction: reserve=4096, keepRecent=8000/);
 	assert.match(summary.lines.join("\n"), /Pi retry: maxRetries=2/);
+});
+
+test("slug lock blocks overwriting an existing plan from another session", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-slug-"));
+	const planPath = resolve(root, "outputs", ".plans", "demo.md");
+	writeFileSyncSafe(planPath, "# Existing\n");
+
+	const result = claimPlanSlug(root, "session-2", "outputs/.plans/demo.md");
+
+	assert.equal(result.ok, false);
+	if (!result.ok) {
+		assert.match(result.reason, /Plan already exists/);
+	}
+});
+
+test("managed cache gc deletes stale cache files and honors dry-run", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-gc-"));
+	const cachePath = resolve(root, "outputs", ".cache", "old.md");
+	writeFileSyncSafe(cachePath, "old");
+	const old = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+	utimesSync(cachePath, old, old);
+
+	const preview = collectManagedGc(root, Date.now(), 14, { dryRun: true });
+	assert.equal(preview.deleted.length, 1);
+	assert.equal(existsSync(cachePath), true);
+
+	const actual = collectManagedGc(root, Date.now(), 14);
+	assert.equal(actual.deleted.length, 1);
+	assert.equal(existsSync(cachePath), false);
+});
+
+test("large custom tool results spill to outputs runs", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-subagent-spill-"));
+	const originalCap = process.env.FEYNMAN_CUSTOM_TOOL_CAP_CHARS;
+	process.env.FEYNMAN_CUSTOM_TOOL_CAP_CHARS = "50";
+	try {
+		const result = spillLargeCustomToolResult(
+			root,
+			"subagent",
+			"call-1",
+			[{ type: "text", text: "x".repeat(200) }],
+			{ ok: true },
+		);
+		assert.ok(result);
+		const parsed = JSON.parse(result!.content[0]!.text) as { path: string; feynman_spillover: boolean };
+		assert.equal(parsed.feynman_spillover, true);
+		assert.match(parsed.path, /outputs\/\.runs\/subagent-call-1-/);
+		assert.equal(existsSync(parsed.path), true);
+	} finally {
+		if (originalCap === undefined) {
+			delete process.env.FEYNMAN_CUSTOM_TOOL_CAP_CHARS;
+		} else {
+			process.env.FEYNMAN_CUSTOM_TOOL_CAP_CHARS = originalCap;
+		}
+	}
 });
 
 function writeFileSyncSafe(path: string, text: string): void {

@@ -261,7 +261,7 @@ This usually means the release exists, but not all platform bundles were uploade
 Workarounds:
   - try again after the release finishes publishing
   - pass the latest published version explicitly, e.g.:
-    curl -fsSL https://feynman.is/install | bash -s -- 0.2.26
+    curl -fsSL https://feynman.is/install | bash -s -- 0.2.27
 EOF
   exit 1
 fi

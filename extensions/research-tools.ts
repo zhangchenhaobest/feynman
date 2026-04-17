@@ -10,6 +10,7 @@ import { registerHelpCommand } from "./research-tools/help.js";
 import { registerInitCommand, registerOutputsCommand } from "./research-tools/project.js";
 import { registerResumePacket } from "./research-tools/resume.js";
 import { registerServiceTierControls } from "./research-tools/service-tier.js";
+import { registerStateManagement } from "./research-tools/state.js";
 
 export default function researchTools(pi: ExtensionAPI): void {
 	const cache: { agentSummaryPromise?: Promise<{ agents: string[]; chains: string[] }> } = {};
@@ -29,4 +30,5 @@ export default function researchTools(pi: ExtensionAPI): void {
 	registerOutputsCommand(pi);
 	registerResumePacket(pi);
 	registerServiceTierControls(pi);
+	registerStateManagement(pi);
 }
