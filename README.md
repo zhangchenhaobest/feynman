@@ -25,7 +25,7 @@ curl -fsSL https://feynman.is/install | bash
 irm https://feynman.is/install.ps1 | iex
 ```
 
-The one-line installer fetches the latest tagged release. To pin a version, pass it explicitly, for example `curl -fsSL https://feynman.is/install | bash -s -- 0.2.27`.
+The one-line installer fetches the latest tagged release. To pin a version, pass it explicitly, for example `curl -fsSL https://feynman.is/install | bash -s -- 0.2.28`.
 
 The installer downloads a standalone native bundle with its own Node.js runtime.
 
@@ -34,8 +34,6 @@ To upgrade the standalone app later, rerun the installer. `feynman update` only 
 To uninstall the standalone app, remove the launcher and runtime bundle, then optionally remove `~/.feynman` if you also want to delete settings, sessions, and installed package state. If you also want to delete alphaXiv login state, remove `~/.ahub`. See the installation guide for platform-specific paths.
 
 Local models are supported through the setup flow. For LM Studio, run `feynman setup`, choose `LM Studio`, and keep the default `http://localhost:1234/v1` unless you changed the server port. For LiteLLM, choose `LiteLLM Proxy` and keep the default `http://localhost:4000/v1`. For Ollama or vLLM, choose `Custom provider (baseUrl + API key)`, use `openai-completions`, and point it at the local `/v1` endpoint.
-
-Feynman uses Pi's own runtime hooks for context hygiene: Pi compaction/retry settings are seeded by default, `context_report` exposes the current Pi context usage to the model, oversized alphaXiv tool returns spill to `outputs/.cache/`, oversized custom/subagent returns spill to `outputs/.runs/`, and a bounded resume packet is injected from `outputs/.plans/`, `outputs/.state/`, and `CHANGELOG.md` when those files exist. Automatic session logging writes JSONL snippets to `notes/feynman-autolog/`; set `FEYNMAN_AUTO_LOG=off` to disable it or `FEYNMAN_AUTO_LOG=full` for full text. Feynman also locks new plan slugs under `outputs/.state/` to prevent concurrent workflow collisions and garbage-collects stale managed caches on startup.
 
 ### Skills Only
 

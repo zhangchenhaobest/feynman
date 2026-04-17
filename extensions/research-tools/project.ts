@@ -5,7 +5,6 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 import { getExtensionCommandSpec } from "../../metadata/commands.mjs";
 import { buildProjectAgentsTemplate, buildSessionLogsReadme } from "./project-scaffold.js";
-import { collectManagedGc } from "./state.js";
 
 async function pathExists(path: string): Promise<boolean> {
 	try {
@@ -105,15 +104,7 @@ export function registerInitCommand(pi: ExtensionAPI): void {
 export function registerOutputsCommand(pi: ExtensionAPI): void {
 	pi.registerCommand("outputs", {
 		description: "Browse all research artifacts (papers, outputs, experiments, notes).",
-		handler: async (args, ctx) => {
-			const trimmedArgs = args.trim();
-			if (trimmedArgs === "gc" || trimmedArgs === "gc --dry-run") {
-				const dryRun = trimmedArgs.includes("--dry-run");
-				const result = collectManagedGc(ctx.cwd, Date.now(), undefined, { dryRun });
-				ctx.ui.notify(`${dryRun ? "Would remove" : "Removed"} ${result.deleted.length} managed cache file(s).`, "info");
-				return;
-			}
-
+		handler: async (_args, ctx) => {
 			const items = await collectArtifacts(ctx.cwd);
 			if (items.length === 0) {
 				ctx.ui.notify("No artifacts found. Use /lit, /draft, /review, or /deepresearch to create some.", "info");

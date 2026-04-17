@@ -127,19 +127,6 @@ export function normalizeFeynmanSettings(
 	settings.theme = "feynman";
 	settings.quietStartup = true;
 	settings.collapseChangelog = true;
-	settings.compaction = {
-		enabled: true,
-		reserveTokens: 16384,
-		keepRecentTokens: 20000,
-		...(settings.compaction && typeof settings.compaction === "object" ? settings.compaction : {}),
-	};
-	settings.retry = {
-		enabled: true,
-		maxRetries: 3,
-		baseDelayMs: 2000,
-		maxDelayMs: 60000,
-		...(settings.retry && typeof settings.retry === "object" ? settings.retry : {}),
-	};
 	const supportedCorePackages = filterPackageSourcesForCurrentNode(CORE_PACKAGE_SOURCES);
 	if (!Array.isArray(settings.packages) || settings.packages.length === 0) {
 		settings.packages = supportedCorePackages;

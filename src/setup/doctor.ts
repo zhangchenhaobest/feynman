@@ -12,11 +12,6 @@ import { buildModelStatusSnapshotFromRecords, getAvailableModelRecords, getSuppo
 import { createModelRegistry, getModelsJsonPath } from "../model/registry.js";
 import { getConfiguredServiceTier } from "../model/service-tier.js";
 
-type ContextRiskSummary = {
-	level: "low" | "medium" | "high" | "unknown";
-	lines: string[];
-};
-
 function findProvidersMissingApiKey(modelsJsonPath: string): string[] {
 	try {
 		const raw = readFileSync(modelsJsonPath, "utf8").trim();
@@ -38,50 +33,6 @@ function findProvidersMissingApiKey(modelsJsonPath: string): string[] {
 	} catch {
 		return [];
 	}
-}
-
-function numberSetting(settings: Record<string, unknown>, path: string[], fallback: number): number {
-	let value: unknown = settings;
-	for (const key of path) {
-		if (!value || typeof value !== "object") return fallback;
-		value = (value as Record<string, unknown>)[key];
-	}
-	return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
-export function buildContextRiskSummary(
-	settings: Record<string, unknown>,
-	model: { provider: string; id: string; contextWindow: number; maxTokens: number; reasoning: boolean } | undefined,
-): ContextRiskSummary {
-	if (!model) {
-		return {
-			level: "unknown",
-			lines: ["context risk: unknown (no active model)"],
-		};
-	}
-
-	const reserveTokens = numberSetting(settings, ["compaction", "reserveTokens"], 16384);
-	const keepRecentTokens = numberSetting(settings, ["compaction", "keepRecentTokens"], 20000);
-	const retryMax = numberSetting(settings, ["retry", "maxRetries"], 3);
-	const usableWindow = Math.max(0, model.contextWindow - reserveTokens);
-	const level = model.contextWindow < 64_000
-		? "high"
-		: model.contextWindow < 128_000
-			? "medium"
-			: "low";
-
-	return {
-		level,
-		lines: [
-			`context risk: ${level}`,
-			`  model: ${model.provider}/${model.id}`,
-			`  context window: ${model.contextWindow}`,
-			`  usable before Pi compaction reserve: ${usableWindow}`,
-			`  Pi compaction: reserve=${reserveTokens}, keepRecent=${keepRecentTokens}`,
-			`  Pi retry: maxRetries=${retryMax}`,
-			`  reasoning: ${model.reasoning ? "supported" : "off/not supported"}`,
-		],
-	};
 }
 
 export type DoctorOptions = {
@@ -213,10 +164,6 @@ export function runDoctor(options: DoctorOptions): void {
 			: "not set"}`,
 	);
 	const modelStatus = collectStatusSnapshot(options);
-	const currentModel = typeof settings.defaultProvider === "string" && typeof settings.defaultModel === "string"
-		? modelRegistry.find(settings.defaultProvider, settings.defaultModel)
-		: undefined;
-	const contextRisk = buildContextRiskSummary(settings, currentModel);
 	console.log(`default model valid: ${modelStatus.modelValid ? "yes" : "no"}`);
 	console.log(`authenticated providers: ${modelStatus.authenticatedProviderCount}`);
 	console.log(`authenticated models: ${modelStatus.authenticatedModelCount}`);
@@ -224,9 +171,6 @@ export function runDoctor(options: DoctorOptions): void {
 	console.log(`recommended model: ${modelStatus.recommendedModel ?? "not available"}`);
 	if (modelStatus.recommendedModelReason) {
 		console.log(`  why: ${modelStatus.recommendedModelReason}`);
-	}
-	for (const line of contextRisk.lines) {
-		console.log(line);
 	}
 	const modelsError = modelRegistry.getError();
 	if (modelsError) {
