@@ -92,6 +92,9 @@ test("deepresearch keeps subagent tool calls small and skips subagents for narro
 	assert.match(deepResearchPrompt, /MUST NOT spawn researcher subagents/i);
 	assert.match(deepResearchPrompt, /Do not inflate a simple explainer into a multi-agent survey/i);
 	assert.match(deepResearchPrompt, /Skip researcher spawning entirely/i);
+	assert.match(deepResearchPrompt, /Use multiple search terms\/angles before drafting/i);
+	assert.match(deepResearchPrompt, /Minimum: 3 distinct queries/i);
+	assert.match(deepResearchPrompt, /Record the exact search terms used/i);
 	assert.match(deepResearchPrompt, /<slug>-research-direct\.md/i);
 	assert.match(deepResearchPrompt, /Do not call `alpha_get_paper`/i);
 	assert.match(deepResearchPrompt, /do not fetch `\.pdf` URLs/i);

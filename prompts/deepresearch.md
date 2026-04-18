@@ -59,6 +59,8 @@ Avoid crash-prone PDF parsing in this workflow. Do not call `alpha_get_paper` an
 If direct search was chosen:
 - Skip researcher spawning entirely.
 - Search and fetch sources yourself.
+- Use multiple search terms/angles before drafting. Minimum: 3 distinct queries for direct-mode research, covering definition/history, mechanism/formula, and current usage/comparison when relevant.
+- Record the exact search terms used in `<slug>-research-direct.md`.
 - Write notes to `<slug>-research-direct.md`.
 - Continue to synthesis.
 
