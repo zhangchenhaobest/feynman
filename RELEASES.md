@@ -4,6 +4,28 @@ This file is the public release history for Feynman. Keep entries user-facing: w
 
 GitHub release notes are generated from the matching `## vX.Y.Z` section in this file.
 
+## v0.2.37 - 2026-04-19
+
+### Fixes
+
+- Hardened `/deepresearch` reviewer/audit fix handling so Feynman may only claim a patch landed after the edit/write tool succeeds and an explicit on-disk check proves the old unsupported content is gone and the corrected content exists.
+- Added provenance requirements for failed edit recovery so verification notes cannot mark an issue fixed before the final candidate actually reflects the fix.
+- Corrected MiniMax model preference casing to match Pi's exposed model IDs.
+
+### Performance
+
+- Resolved preview/runtime executables in parallel before launching Pi, reducing synchronous startup work while preserving Windows, macOS, and Linux fallback behavior.
+
+### Fork Review
+
+- Scanned all public forks and selectively adopted the low-risk startup/model-test improvements. Rejected product-specific or bloated fork changes such as Claude CLI bypass mode, ValiChord, Overleaf export, and an external `parallel-cli` dependency.
+
+### Validation
+
+- Full local tests passed: 121/121.
+- Typecheck, build, local CLI doctor, and real one-shot launch smoke test passed.
+- Fork scan compared 676 accessible forks: 666 behind, 2 identical, 8 with unique commits inspected.
+
 ## v0.2.36 - 2026-04-18
 
 ### Fixes
