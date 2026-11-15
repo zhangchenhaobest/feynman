@@ -1,3 +1,29 @@
+# feynman
+
+[English](#english) | [简体中文](#简体中文)
+
+---
+
+## English
+
+The open source AI research agent.
+
+> This repository is a fork. For full documentation, see the upstream repository.
+
+[简体中文](#简体中文)
+
+---
+
+## 简体中文
+
+开源 AI 研究 Agent。
+
+> 本项目为 fork，详细文档请以原仓库为准。
+
+[English](#english)
+
+---
+
 <p align="center">
   <a href="https://feynman.is">
     <img src="assets/hero.png" alt="Feynman CLI" width="800" />
